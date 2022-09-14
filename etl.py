@@ -9,7 +9,7 @@ def process_song_file(cur, filepath):
     """Process JSON song file to insert into songs and artists table
 
     Args:
-        cur (psycopg2 cursor): Cursor that connect to db.
+        cur (psycopg2 cursor): Cursor that connect to database.
         filepath (string): Path to JSON song file to be processed
     """
     # open song file
@@ -38,6 +38,12 @@ def process_song_file(cur, filepath):
 
 
 def process_log_file(cur, filepath):
+    """Process JSON log file to insert into songs and artists table
+
+    Args:
+        cur (psycopg2 cursor): Cursor that connect to database.
+        filepath (string): Path to JSON song file to be processed
+    """
     # open log file
     df = pd.read_json(
         filepath,
@@ -75,14 +81,10 @@ def process_log_file(cur, filepath):
         cur.execute(time_table_insert, list(row))
 
     # load user table
-    user_df = df_copy[['userId', 'firstName', 'lastName', 'gender', 'level']]
+    user_df = df[['userId', 'firstName', 'lastName', 'gender', 'level']]
     
     # Remove duplicates row
     user_df = user_df.drop_duplicates('userId', keep='first')
-    
-    # Clean data by remove rows with no userId
-    user_df = user_df[user_df['userId']!='']
-    
 
     # insert user records
     for i, row in user_df.iterrows():
@@ -117,6 +119,14 @@ def process_log_file(cur, filepath):
 
 
 def process_data(cur, conn, filepath, func):
+    """Get all JSON file from filepath
+
+    Args:
+        cur: Cursor that connect to database.
+        conn: Connection that connect to the database
+        filepath (string): Path to file to be processed
+        func: Function to be called
+    """
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
